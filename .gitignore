@@ -11,3 +11,4 @@ venv/
 # cache
 __pycache__
 *.pyc
+/challenge_data/public_sample_submission.csv

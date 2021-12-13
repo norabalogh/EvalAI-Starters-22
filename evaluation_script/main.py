@@ -1,4 +1,6 @@
 import random
+import sklearn.metrics as sm
+import pandas as pd
 
 
 def evaluate(test_annotation_file, user_submission_file, phase_codename, **kwargs):
@@ -39,43 +41,50 @@ def evaluate(test_annotation_file, user_submission_file, phase_codename, **kwarg
             'submitted_at': u'2017-03-20T19:22:03.880652Z'
         }
     """
+    solution_df = pd.read_csv(test_annotation_file)
+    submission_df = pd.read_csv(user_submission_file)
+    print("Submission shape: ", submission_df.shape)
+    if submission_df.shape[0] != solution_df.shape[0]:
+        raise Exception("Sumbmission number of rows are incorrect.")
+
+    if submission_df.shape[1] !=2:
+        raise Exception("Submission should have 2 columns.")
+    submission_df.columns = ["ID", 'predicted_fuel_consumption_sum']
+
+    solution_df = pd.merge(solution_df, submission_df,  on='ID', how='left')
+
     output = {}
-    if phase_codename == "dev":
-        print("Evaluating for Dev Phase")
+    if phase_codename == "public":
+        print("Evaluating for Public Phase")
+        public_df = solution_df.loc[solution_df.Usage=="Public", :]
+        mae_public = sm.mean_absolute_error(public_df["fuel_consumption_sum"], public_df["predicted_fuel_consumption_sum"])
+        rmse_public = sm.mean_squared_error(public_df["fuel_consumption_sum"], public_df["predicted_fuel_consumption_sum"])
+
+        print("Evaluating for Private Phase")
+        private_df = solution_df.loc[solution_df.Usage=="Private", :]
+        mae_private = sm.mean_absolute_error(private_df["fuel_consumption_sum"], private_df["predicted_fuel_consumption_sum"])
+        rmse_private = sm.mean_squared_error(private_df["fuel_consumption_sum"], private_df["predicted_fuel_consumption_sum"])
         output["result"] = [
             {
-                "train_split": {
-                    "Metric1": random.randint(0, 99),
-                    "Metric2": random.randint(0, 99),
-                    "Metric3": random.randint(0, 99),
-                    "Total": random.randint(0, 99),
+                "public_split": {
+                    "MAE": mae_public,
+                    "RMSE": rmse_public
+                }
+            },
+            {
+                "private_split": {
+                    "MAE": mae_private,
+                    "RMSE": rmse_private
                 }
             }
         ]
         # To display the results in the result file
-        output["submission_result"] = output["result"][0]["train_split"]
-        print("Completed evaluation for Dev Phase")
-    elif phase_codename == "test":
-        print("Evaluating for Test Phase")
-        output["result"] = [
-            {
-                "train_split": {
-                    "Metric1": random.randint(0, 99),
-                    "Metric2": random.randint(0, 99),
-                    "Metric3": random.randint(0, 99),
-                    "Total": random.randint(0, 99),
-                }
-            },
-            {
-                "test_split": {
-                    "Metric1": random.randint(0, 99),
-                    "Metric2": random.randint(0, 99),
-                    "Metric3": random.randint(0, 99),
-                    "Total": random.randint(0, 99),
-                }
-            },
-        ]
-        # To display the results in the result file
-        output["submission_result"] = output["result"][0]
-        print("Completed evaluation for Test Phase")
+        output["submission_result"] = output["result"][0]["public_split"]
+        print("Completed evaluation.")
     return output
+
+# if __name__ == "__main__":
+#     res1 = evaluate("annotations/private_solution.csv", "challenge_data/public_sample_submission.csv", "public")
+#     print("Result\n", res1)
+#     res2 = evaluate("annotations/private_solution.csv", "challenge_data/public_sample_submission.csv", "private")
+#     print("Result\n", res2)
