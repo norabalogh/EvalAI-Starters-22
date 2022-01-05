@@ -19,16 +19,16 @@ leaderboard:
   - id: 1
     schema:
       {
-        "labels": ["MAE", "RMSE"],
+        "labels": ["MAE", "MSE"],
         "default_order_by": "MAE",
         "metadata": {
           "MAE": {
             "sort_ascending": True,
             "description": "Mean Absolute Error.",
           },
-          "RMSE": {
+          "MSE": {
             "sort_ascending": True,
-            "description": "Root Mean Squared Error.",
+            "description": "Mean Squared Error.",
           }
         }
       }

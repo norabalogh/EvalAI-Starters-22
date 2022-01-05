@@ -68,13 +68,13 @@ def evaluate(test_annotation_file, user_submission_file, phase_codename, **kwarg
             {
                 "public_split": {
                     "MAE": mae_public,
-                    "RMSE": rmse_public
+                    "MSE": rmse_public
                 }
             },
             {
                 "private_split": {
                     "MAE": mae_private,
-                    "RMSE": rmse_private
+                    "MSE": rmse_private
                 }
             }
         ]
